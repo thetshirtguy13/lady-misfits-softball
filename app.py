@@ -4,7 +4,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
-from sqlalchemy import inspect, text
+from sqlalchemy import and_, func, inspect, or_, text
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from datetime import datetime, date
@@ -30,7 +30,11 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "false").lower()=="true",
     MAX_CONTENT_LENGTH=200 * 1024 * 1024,
-    SEND_FILE_MAX_AGE_DEFAULT=3600,
+    SEND_FILE_MAX_AGE_DEFAULT=86400,
+    SQLALCHEMY_ENGINE_OPTIONS={
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+    },
 )
 db_url = os.environ.get("DATABASE_URL", "sqlite:///lady_misfits_softball.db")
 if db_url.startswith("postgres://"):
@@ -771,7 +775,17 @@ def dashboard():
     linked=User.query.filter_by(parent_id=u.id,role="player").all() if u.role=="parent" else []
     memberships=TeamMembership.query.filter_by(user_id=u.id,approved=True).all()
     teams=[db.session.get(Team,m.team_id) for m in memberships]
-    return render_template("dashboard.html",user=u,totals=player_totals(u.id) if u.role=="player" else None,completions=comps,linked=linked,teams=teams)
+    overview=None; upcoming=[]
+    if u.role in {"admin","coach"}:
+        visible_ids=team_ids_for(u)
+        overview={
+            "teams":len(visible_ids),
+            "players":TeamMembership.query.filter(TeamMembership.team_id.in_(visible_ids),TeamMembership.role=="player").count() if visible_ids else 0,
+            "roster_players":RosterProfile.query.filter(RosterProfile.team_id.in_(visible_ids)).with_entities(RosterProfile.team_id,RosterProfile.name_key).distinct().count() if visible_ids else 0,
+            "upcoming":ScheduleEvent.query.filter(ScheduleEvent.team_id.in_(visible_ids),ScheduleEvent.starts_on>=date.today()).count() if visible_ids else 0,
+        }
+        upcoming=ScheduleEvent.query.filter(ScheduleEvent.team_id.in_(visible_ids),ScheduleEvent.starts_on>=date.today()).order_by(ScheduleEvent.starts_on,ScheduleEvent.start_time).limit(5).all() if visible_ids else []
+    return render_template("dashboard.html",user=u,totals=player_totals(u.id) if u.role=="player" else None,completions=comps,linked=linked,teams=teams,overview=overview,upcoming=upcoming)
 
 @app.route("/calendar",methods=["GET","POST"])
 @login_required
@@ -847,7 +861,11 @@ def team_calendar():
 def team_chats():
     u=current_user(); teams=visible_teams_for(u)
     states={state.team_id:state.last_read_message_id for state in ChatReadState.query.filter_by(user_id=u.id).all()}
-    unread={team.id:ChatMessage.query.filter(ChatMessage.team_id==team.id,ChatMessage.id>states.get(team.id,0),ChatMessage.is_deleted==False).count() for team in teams}
+    unread={team.id:0 for team in teams}
+    unread_filters=[and_(ChatMessage.team_id==team.id,ChatMessage.id>states.get(team.id,0)) for team in teams]
+    if unread_filters:
+        counts=db.session.query(ChatMessage.team_id,func.count(ChatMessage.id)).filter(ChatMessage.is_deleted==False,or_(*unread_filters)).group_by(ChatMessage.team_id).all()
+        unread.update(dict(counts))
     notification_count=PortalNotification.query.filter_by(user_id=u.id,read_at=None).count()
     return render_template("team_chats.html",user=u,teams=teams,team_colors=team_color_map(Team.query.order_by(Team.id).all()),unread=unread,notification_count=notification_count)
 
@@ -1287,6 +1305,15 @@ def coach():
         if link.parent_id in linked_users:
             family_by_profile.setdefault(link.profile_id,set()).add(link.parent_id)
     player_by_profile={link.profile_id:link.player_id for link in player_links if link.player_id in linked_users}
+    player_ids={player_id for player_id in player_by_profile.values() if player_id}
+    completion_totals={
+        player_id:(count,minutes or 0)
+        for player_id,count,minutes in db.session.query(
+            WorkoutCompletion.player_id,
+            func.count(WorkoutCompletion.id),
+            func.sum(WorkoutCompletion.minutes),
+        ).filter(WorkoutCompletion.player_id.in_(player_ids)).group_by(WorkoutCompletion.player_id).all()
+    } if player_ids else {}
     rows_by_team={team.id:[] for team in teams}
     linked_count=0
     for key,profile in latest.items():
@@ -1295,7 +1322,7 @@ def coach():
         player_id=next((player_by_profile[profile_id] for profile_id in snapshot_ids if profile_id in player_by_profile),None)
         families=sorted((linked_users[user_id] for user_id in family_ids),key=lambda user:user.name)
         player_account=linked_users.get(player_id)
-        completions=WorkoutCompletion.query.filter_by(player_id=player_id).all() if player_id else []
+        workout_count,workout_minutes=completion_totals.get(player_id,(0,0))
         linked=bool(families or player_account)
         linked_count+=int(linked)
         rows_by_team[profile.team_id].append({
@@ -1303,8 +1330,8 @@ def coach():
             "families":families,
             "player_account":player_account,
             "linked":linked,
-            "workouts":len(completions),
-            "minutes":sum(completion.minutes for completion in completions),
+            "workouts":workout_count,
+            "minutes":workout_minutes,
         })
     team_rows=[{"team":team,"players":rows_by_team[team.id]} for team in teams]
     return render_template("coach.html",user=u,team_rows=team_rows,total_players=len(latest),linked_count=linked_count)
@@ -1360,13 +1387,19 @@ def admin_panel():
     players=User.query.filter_by(role="player").order_by(User.name).all()
     coaches=User.query.filter_by(role="coach").order_by(User.name).all()
     teams=Team.query.order_by(Team.name).all()
-    rows=[]
-    for player in players:
-        memberships=TeamMembership.query.filter_by(user_id=player.id,role="player").all()
-        parent=db.session.get(User,player.parent_id) if player.parent_id else None
-        consent=ConsentRequest.query.filter_by(player_id=player.id).order_by(ConsentRequest.created_at.desc()).first()
-        rows.append((player,memberships,parent,consent))
-    coach_rows=[(coach,TeamMembership.query.filter_by(user_id=coach.id,role="coach").all()) for coach in coaches]
+    player_ids=[player.id for player in players]; coach_ids=[coach.id for coach in coaches]
+    membership_rows=TeamMembership.query.filter(TeamMembership.user_id.in_(player_ids+coach_ids)).all() if player_ids or coach_ids else []
+    memberships_by_user={}
+    for membership in membership_rows:
+        memberships_by_user.setdefault(membership.user_id,[]).append(membership)
+    parent_ids={player.parent_id for player in players if player.parent_id}
+    parents={parent.id:parent for parent in User.query.filter(User.id.in_(parent_ids)).all()} if parent_ids else {}
+    latest_consent={}
+    if player_ids:
+        for consent in ConsentRequest.query.filter(ConsentRequest.player_id.in_(player_ids)).order_by(ConsentRequest.created_at.desc()).all():
+            latest_consent.setdefault(consent.player_id,consent)
+    rows=[(player,memberships_by_user.get(player.id,[]),parents.get(player.parent_id),latest_consent.get(player.id)) for player in players]
+    coach_rows=[(coach,memberships_by_user.get(coach.id,[])) for coach in coaches]
     return render_template("admin.html",user=current_user(),rows=rows,coach_rows=coach_rows,teams=teams)
 
 @app.route("/admin/coach/<int:cid>/team",methods=["POST"])

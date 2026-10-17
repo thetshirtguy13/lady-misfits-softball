@@ -142,6 +142,33 @@ class PortalFlowTests(unittest.TestCase):
         self.assertIn(b"Shopify connection notice",response.data)
         self.assertIn(b"https://thetshirtguy.co/collections/lady-misfits-softball",response.data)
 
+    def test_every_admin_navigation_destination_is_operational(self):
+        self.login_as(self.admin_id)
+        destinations={
+            "/dashboard":b"Dashboard",
+            "/calendar":b"Calendar",
+            "/chats":b"Team Chats",
+            "/learn":b"FASTPITCH SOFTBALL IQ",
+            "/practice":b"COMPLETE SOFTBALL IQ",
+            "/scenario-builder":b"Softball Scenario Builder",
+            "/workouts":b"Practice Drill Library",
+            "/coach":b"Team Player Overview",
+            "/teams":b"Create Team",
+            "/roster":b"Development",
+            "/gamechanger":b"GameChanger",
+            "/admin/rosters":b"Team Rosters",
+            "/admin/families":b"Family Accounts",
+            "/admin":b"Account Administration",
+            "/finances":b"Team Finances",
+            "/media":b"Private",
+            "/account":b"Account",
+        }
+        for path,expected in destinations.items():
+            with self.subTest(path=path):
+                response=self.client.get(path)
+                self.assertEqual(200,response.status_code)
+                self.assertIn(expected,response.data)
+
     def login_as(self, user_id):
         with self.client.session_transaction() as session:
             session["user_id"] = user_id
