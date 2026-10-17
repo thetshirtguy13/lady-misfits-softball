@@ -1,0 +1,80 @@
+:root {
+  --lady-pink: #ff2fa8;
+  --lady-cyan: #19e6ff;
+  --lady-lime: #b8ff3d;
+  --lady-ink: #080b16;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(25,230,255,.045), transparent 28rem),
+    #080b16;
+}
+
+header {
+  border-bottom: 1px solid rgba(25,230,255,.34);
+  box-shadow: 0 10px 36px rgba(0,0,0,.32);
+}
+
+.logo, .biglogo {
+  background: #111526;
+  border: 2px solid var(--lady-pink);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(25,230,255,.18), 0 0 24px rgba(255,47,168,.34);
+}
+
+header nav a:hover,
+header nav a:focus-visible,
+.level-tab.active {
+  border-color: var(--lady-cyan);
+  color: #fff;
+}
+
+button,
+.btn,
+.gold-btn {
+  background: linear-gradient(135deg, var(--lady-pink), #db247f);
+  color: #fff;
+}
+
+.eyebrow,
+.quiz-head small,
+.question-tags span:first-child,
+.pitch-tags span:first-child {
+  color: var(--lady-cyan);
+}
+
+.card,
+.lesson-card,
+.question-card {
+  border-color: rgba(25,230,255,.22);
+}
+
+.learning-hero {
+  background: #0c101a;
+  border-color: rgba(25,230,255,.45);
+  box-shadow: inset 5px 0 0 var(--lady-pink), 0 18px 46px rgba(0,0,0,.28);
+}
+
+.learning-hero span,
+.lesson-card small,
+.lesson-card a,
+.baseball-words summary {
+  color: var(--lady-cyan);
+}
+
+.lesson-card.featured,
+.lesson-card.pitch,
+.lesson-card.guides {
+  background: #0d121d;
+  border-color: rgba(255,47,168,.35);
+}
+
+.progress-track span {
+  background: var(--lady-pink);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo { transition: box-shadow .2s ease, transform .2s ease; }
+  .logo:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(25,230,255,.42); }
+}
