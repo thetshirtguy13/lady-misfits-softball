@@ -426,7 +426,11 @@ class PortalFlowTests(unittest.TestCase):
         with portal.app.app_context():
             membership=portal.TeamMembership.query.filter_by(user_id=coach_id,team_id=self.team_id,role="coach").one()
             self.assertTrue(membership.approved)
-        self.assertIn(b">Players<", self.client.get("/dashboard").data)
+        dashboard=self.client.get("/dashboard").data
+        self.assertIn(b"Team Rosters",dashboard)
+        self.assertNotIn(b">Players<",dashboard)
+        roster=self.client.get(f"/admin/rosters?team_id={self.team_id}").data
+        self.assertIn(b"Import or refresh roster and statistics",roster)
 
     def test_admin_can_assign_remove_and_disable_player(self):
         self.register()
