@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Softball Scenario Builder{% endblock %}
-{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261017')}}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261017')}}"><link rel="stylesheet" href="{{url_for('static',filename='scenario_builder_v2.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<section id="scenario-app" class="scenario-app" data-editable="{{'true' if editable else 'false'}}" data-selected-id="{{selected_id or ''}}" data-scenarios="{{scenario_payload|tojson|forceescape}}">
+<section id="scenario-app" class="scenario-app sport-softball" data-editable="{{'true' if editable else 'false'}}" data-selected-id="{{selected_id or ''}}" data-scenarios="{{scenario_payload|tojson|forceescape}}">
   <div class="builder-heading">
     <div><p class="eyebrow">Team preparation</p><h1>Softball Scenario Builder</h1></div>
     <div class="playback-controls">
+      <label class="speed-control">Speed<select id="playback-speed"><option value="0.65">Slow</option><option value="1" selected>Game</option><option value="1.35">Fast</option></select></label>
       <button type="button" class="builder-btn quiet" id="restart-button" title="Restart scenario">Restart</button>
       <button type="button" class="builder-btn play" id="play-button">Play Scenario</button>
     </div>
@@ -28,6 +29,11 @@
     <button type="button" class="preset-button" data-preset="ground-r1">Ground Ball + R1</button>
     <button type="button" class="preset-button" data-preset="bunt-r1">Bunt Defense</button>
     <button type="button" class="preset-button" data-preset="empty">Empty Field</button>
+    <span>Runners</span>
+    <button type="button" class="preset-button runner-toggle" data-runner="R1">1st</button>
+    <button type="button" class="preset-button runner-toggle" data-runner="R2">2nd</button>
+    <button type="button" class="preset-button runner-toggle" data-runner="R3">3rd</button>
+    <button type="button" class="preset-button runner-toggle" data-runner="BR">Batter</button>
   </div>
 
   <div class="tool-bar" aria-label="Scenario action tools">
@@ -89,7 +95,7 @@
 
     <aside class="builder-side">
       <section class="timeline-panel">
-        <div class="panel-title"><div><span>Sequence</span><strong id="step-count">0 steps</strong></div>{% if editable %}<button type="button" id="clear-button" class="text-button">Clear</button>{% endif %}</div>
+        <div class="panel-title"><div><span>Sequence</span><strong id="step-count">0 steps</strong></div>{% if editable %}<div class="timeline-tools"><button type="button" id="insert-button" class="text-button" title="Insert a new step after the selected step">Insert</button><button type="button" id="redraw-button" class="text-button" title="Redraw the selected step">Redraw</button><button type="button" id="clear-button" class="text-button">Clear</button></div>{% endif %}</div>
         <ol id="timeline" class="timeline"></ol>
         <div id="empty-timeline" class="empty-timeline">Add a movement or ball action to build the sequence.</div>
       </section>
@@ -108,6 +114,6 @@
     </aside>
   </div>
 </section>
-<script src="{{url_for('static',filename='scenario_builder.js',v='20261012')}}" defer></script>
+<script src="{{url_for('static',filename='scenario_builder.js',v='20261017')}}" defer></script>
 {% endblock %}
 
