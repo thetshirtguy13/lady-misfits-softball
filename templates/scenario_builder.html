@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Softball Scenario Builder{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261012')}}">
+<section id="scenario-app" class="scenario-app" data-editable="{{'true' if editable else 'false'}}" data-selected-id="{{selected_id or ''}}" data-scenarios="{{scenario_payload|tojson|forceescape}}">
+  <div class="builder-heading">
+    <div><p class="eyebrow">Team preparation</p><h1>Softball Scenario Builder</h1></div>
+    <div class="playback-controls">
+      <button type="button" class="builder-btn quiet" id="restart-button" title="Restart scenario">Restart</button>
+      <button type="button" class="builder-btn play" id="play-button">Play Scenario</button>
+    </div>
+  </div>
+
+  {% if editable %}
+  <form method="post" id="scenario-form" class="scenario-meta">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    <input type="hidden" name="scenario_id" id="scenario-id">
+    <input type="hidden" name="design_json" id="design-json">
+    <div><label for="scenario-title">Scenario name</label><input id="scenario-title" name="title" maxlength="140" placeholder="Fly ball, runner on third" required></div>
+    <div><label for="scenario-situation">Situation or coaching call</label><input id="scenario-situation" name="situation" maxlength="240" placeholder="One out, runner tags on the catch"></div>
+    <div><label for="scenario-team">Team</label><select id="scenario-team" name="team_id" required>{% for team in teams %}<option value="{{team.id}}">{{team.name}}</option>{% endfor %}</select></div>
+    <button type="submit" class="builder-btn save">Save to Team</button>
+  </form>
+
+  <div class="preset-bar" aria-label="Scenario presets">
+    <span>Start</span>
+    <button type="button" class="preset-button active" data-preset="fly-r3">Fly Ball + R3</button>
+    <button type="button" class="preset-button" data-preset="ground-r1">Ground Ball + R1</button>
+    <button type="button" class="preset-button" data-preset="bunt-r1">Bunt Defense</button>
+    <button type="button" class="preset-button" data-preset="empty">Empty Field</button>
+  </div>
+
+  <div class="tool-bar" aria-label="Scenario action tools">
+    <button type="button" class="tool-button active" data-tool="setup"><b>+</b><span>Setup</span></button>
+    <button type="button" class="tool-button" data-tool="move"><b>&#8594;</b><span>Move</span></button>
+    <button type="button" class="tool-button" data-tool="throw"><b>&#8644;</b><span>Throw</span></button>
+    <button type="button" class="tool-button" data-tool="hit"><b>&#9679;</b><span>Ball Flight</span></button>
+    <button type="button" class="tool-button" data-tool="cover"><b>C</b><span>Cover</span></button>
+    <button type="button" class="tool-button" data-tool="backup"><b>B</b><span>Backup</span></button>
+    <button type="button" class="tool-button" data-tool="cutoff"><b>X</b><span>Cutoff</span></button>
+    <button type="button" class="tool-button" data-tool="tag"><b>T</b><span>Tag / Run</span></button>
+    <button type="button" class="tool-button" id="undo-button"><b>&#8630;</b><span>Undo</span></button>
+  </div>
+  {% endif %}
+
+  <div class="builder-layout">
+    <div class="field-column">
+      <div class="field-status"><strong id="scenario-status">Fly Ball + R3</strong><span id="instruction-text">Drag markers to set the field, or choose a tool to add a step.</span></div>
+      <div id="baseball-field" class="baseball-field" aria-label="Interactive softball field">
+        <svg class="field-art" viewBox="0 0 1000 760" role="img" aria-label="Realistic fastpitch softball diamond with outfield wall, warning track, grass, dirt, bases and foul lines">
+          <defs>
+            <linearGradient id="field-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b7653"/><stop offset=".62" stop-color="#07583e"/><stop offset="1" stop-color="#043a30"/></linearGradient>
+            <linearGradient id="infield-dirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c17d45"/><stop offset="1" stop-color="#754426"/></linearGradient>
+            <linearGradient id="warning-track" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b36f3c"/><stop offset="1" stop-color="#684029"/></linearGradient>
+            <radialGradient id="field-light" cx="50%" cy="72%" r="68%"><stop offset="0" stop-color="#67f5bd" stop-opacity=".18"/><stop offset=".68" stop-color="#16d99a" stop-opacity=".03"/><stop offset="1" stop-color="#001712" stop-opacity=".38"/></radialGradient>
+            <pattern id="mow-stripes" width="150" height="150" patternUnits="userSpaceOnUse" patternTransform="rotate(42)"><rect width="75" height="150" fill="#baffdc" opacity=".055"/><rect x="75" width="75" height="150" fill="#001c15" opacity=".055"/></pattern>
+            <clipPath id="field-clip"><path d="M500 724 L72 302 Q108 113 284 45 Q500 -35 716 45 Q892 113 928 302 Z"/></clipPath>
+            <filter id="field-glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="base-shadow" x="-80%" y="-80%" width="260%" height="260%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#00100c" flood-opacity=".8"/></filter>
+          </defs>
+          <path class="field-ground" d="M500 724 L72 302 Q108 113 284 45 Q500 -35 716 45 Q892 113 928 302 Z" fill="url(#field-grass)"/>
+          <g clip-path="url(#field-clip)">
+            <rect width="1000" height="760" fill="url(#mow-stripes)"/>
+            <path d="M91 302 Q128 128 294 64 Q500 -10 706 64 Q872 128 909 302" fill="none" stroke="url(#warning-track)" stroke-width="34"/>
+            <path d="M500 716 L205 413 L500 116 L795 413 Z" fill="url(#infield-dirt)" stroke="#e29a58" stroke-width="3"/>
+            <path d="M500 649 L271 413 L500 181 L729 413 Z" fill="#08724d" stroke="#36e6aa" stroke-opacity=".55" stroke-width="3"/>
+            <path d="M500 649 L271 413 L500 181 L729 413 Z" fill="url(#mow-stripes)" opacity=".55"/>
+            <circle cx="500" cy="413" r="45" fill="url(#infield-dirt)" stroke="#e29a58" stroke-width="3"/>
+            <circle cx="500" cy="704" r="54" fill="url(#infield-dirt)"/>
+            <path d="M500 716 L72 302 M500 716 L928 302" fill="none" stroke="#d9fff5" stroke-width="5" filter="url(#field-glow)"/>
+            <path d="M500 716 L271 413 L500 181 L729 413 Z" fill="none" stroke="#f2b66f" stroke-width="7" opacity=".72"/>
+            <path d="M500 716 L271 413 M500 716 L729 413 M271 413 L500 181 M729 413 L500 181" fill="none" stroke="#f8d5a5" stroke-width="2" opacity=".35"/>
+            <rect width="1000" height="760" fill="url(#field-light)"/>
+          </g>
+          <path class="outfield-wall" d="M72 302 Q108 113 284 45 Q500 -35 716 45 Q892 113 928 302" fill="none" stroke="#24f2c2" stroke-width="9" filter="url(#field-glow)"/>
+          <g class="distance-markers" fill="#bfffee" font-family="system-ui,sans-serif" font-size="18" font-weight="900" text-anchor="middle"><text x="130" y="226">200</text><text x="500" y="45">225</text><text x="870" y="226">200</text></g>
+          <g class="foul-poles" fill="#d9ff46" filter="url(#field-glow)"><rect x="67" y="257" width="8" height="48" rx="2"/><rect x="925" y="257" width="8" height="48" rx="2"/></g>
+          <g class="field-details" fill="none" stroke="#e9fff9" stroke-width="3" opacity=".7"><path d="M447 682 h-31 v-72 h26"/><path d="M553 682 h31 v-72 h-26"/><path d="M219 545 h-118 v54 h108 M781 545 h118 v54 h-108" stroke="#ff5cc9" stroke-width="5"/></g>
+          <g class="dugout-labels" fill="#ff98df" font-family="system-ui,sans-serif" font-size="14" font-weight="900" letter-spacing="2"><text x="111" y="537">DUGOUT</text><text x="817" y="537">DUGOUT</text></g>
+          <g class="bases" fill="#fff" stroke="#d9fff5" stroke-width="3" filter="url(#base-shadow)"><path d="M500 692 l17 14 -8 22 h-18 l-8 -22 z"/><rect x="716" y="400" width="26" height="26" transform="rotate(45 729 413)"/><rect x="487" y="168" width="26" height="26" transform="rotate(45 500 181)"/><rect x="258" y="400" width="26" height="26" transform="rotate(45 271 413)"/></g>
+          <rect x="490" y="406" width="20" height="6" rx="2" fill="#fff" filter="url(#base-shadow)"/>
+          <path d="M500 648 Q500 577 500 497" fill="none" stroke="#ffba68" stroke-width="3" stroke-dasharray="9 11" opacity=".72"/>
+        </svg>
+        <div id="movement-layer" class="movement-layer"></div>
+        <div id="marker-layer" class="marker-layer"></div>
+      </div>
+      <div class="play-progress"><div id="play-progress-bar"></div></div>
+    </div>
+
+    <aside class="builder-side">
+      <section class="timeline-panel">
+        <div class="panel-title"><div><span>Sequence</span><strong id="step-count">0 steps</strong></div>{% if editable %}<button type="button" id="clear-button" class="text-button">Clear</button>{% endif %}</div>
+        <ol id="timeline" class="timeline"></ol>
+        <div id="empty-timeline" class="empty-timeline">Add a movement or ball action to build the sequence.</div>
+      </section>
+      <section class="library-panel">
+        <div class="panel-title"><div><span>Team Library</span><strong>{{scenarios|length}} saved</strong></div></div>
+        <div class="scenario-library">
+          {% for scenario in scenarios %}
+          <article class="library-item" data-scenario-id="{{scenario.id}}">
+            <button type="button" class="open-scenario"><span>{{scenario.title}}</span><small>{{scenario.situation or 'Team scenario'}}</small></button>
+            <span class="team-chip">{% for team in teams %}{% if team.id==scenario.team_id %}{{team.age_group}}{% endif %}{% endfor %}</span>
+            {% if editable %}<form method="post" class="delete-scenario"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="action" value="delete"><input type="hidden" name="scenario_id" value="{{scenario.id}}"><button title="Delete scenario" aria-label="Delete {{scenario.title}}">&times;</button></form>{% endif %}
+          </article>
+          {% else %}<p class="library-empty">No team scenarios saved yet.</p>{% endfor %}
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>
+<script src="{{url_for('static',filename='scenario_builder.js',v='20261012')}}" defer></script>
+{% endblock %}
+

@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block content %}
+<div class="auth register-auth card">
+  <h1>Create Account</h1>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Account type<select name="role" id="role"><option value="parent">Parent or guardian</option><option value="coach">Coach</option></select></label>
+    <label>Full name<input name="name" required autocomplete="name"></label>
+    <label>Email<input name="email" type="email" required autocomplete="email"></label>
+    <label>Password<input name="password" type="password" minlength="10" required autocomplete="new-password"></label>
+    <div id="familyFields" {% if not player_choices %}hidden{% endif %}>
+      <label for="profile_id">Your player</label>
+      <select name="profile_id" id="profile_id" {% if player_choices %}required{% endif %}>
+        <option value="">Choose a player</option>
+        {% for profile,team in player_choices %}<option value="{{profile.id}}">{{team.age_group}} · {{profile.name}}{% if profile.jersey %} · #{{profile.jersey}}{% endif %}</option>{% endfor %}
+      </select>
+      <label for="join_code">Team code</label>
+      <input name="join_code" id="join_code" placeholder="Get this code from your coach" {% if player_choices %}required{% endif %} autocomplete="off">
+    </div>
+    <button>Create Account</button>
+  </form>
+  <p class="muted small">Parents select an available 10U, 12U, 14U, 16U, or 18U roster player. Players already linked to a family account stay protected.</p>
+</div>
+<script>
+const role=document.getElementById('role'),family=document.getElementById('familyFields'),profile=document.getElementById('profile_id'),code=document.getElementById('join_code');
+function syncFamily(){const show=role.value==='parent'&&profile.options.length>1;family.hidden=!show;profile.required=show;code.required=show}
+role.addEventListener('change',syncFamily);syncFamily();
+</script>
+{% endblock %}
+
