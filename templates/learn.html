@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}Learn Softball IQ{% endblock %}{% block content %}
+{% extends "base.html" %}{% block title %}Learn Softball IQ{% endblock %}{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='field_iq.css',v='20261017')}}"><link rel="stylesheet" href="{{url_for('static',filename='field_iq_v2.css',v='20261017')}}">{% endblock %}{% block content %}
 <section class="learning-hero"><span>FASTPITCH SOFTBALL IQ</span><h1>Read the game one decision ahead.</h1><p>Progress from core responsibilities to technical, game-state decisions across hitting, pitching, fielding, catching, baserunning, and team defense.</p><a class="gold-btn" href="{{url_for('practice',level='competitive')}}">Start a competitive round →</a></section>
 <div class="lesson-grid">
 <article class="lesson-card featured"><small>THREE DIFFICULTY LEVELS</small><h2>Complete Softball IQ</h2><p>Learn fastpitch reads for slap defense, bunt rotations, the look-back rule, DP/FLEX, pitching, catching, baserunning, hitting, and team defense.</p><a href="{{url_for('practice',level='foundation')}}">Choose a level →</a></article>

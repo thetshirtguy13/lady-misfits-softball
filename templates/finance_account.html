@@ -1,5 +1,4 @@
-{% extends "base.html" %}{% block title %}{{account.name}} • Payments{% endblock %}{% block content %}
-<link rel="stylesheet" href="{{url_for('static',filename='finances.css')}}">
+{% extends "base.html" %}{% block title %}{{account.name}} • Payments{% endblock %}{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='finances.css',v='20261017')}}">{% endblock %}{% block content %}
 {% macro security() %}<input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="operation_key" value="{{finance_token()}}">{% endmacro %}
 <a href="{{url_for('finances')}}">← {{'Team finances' if user.role=='admin' else 'Family payments'}}</a><h1>{{account.name}}</h1><p class="muted">{{team.name}} · {{account.season}} · Account MF-{{account.id}}</p>
 <div class="cards"><section class="card"><p class="muted">{{'Credit available' if balance<0 else 'Balance due'}}</p><p class="balance">{{balance|money}}</p><p>Includes confirmed family payments, sponsor payments, discounts and adjustments. Reported payments awaiting review are not deducted yet.</p>

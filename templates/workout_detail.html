@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{workout.title}}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='drill_library.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{url_for('static',filename='drill_library.css',v='20261005')}}">
 <a class="drill-back" href="{{url_for('workouts')}}">Back to Drill Library</a>
 <div class="drill-detail-heading">
   <span class="pill">{{workout.category}}</span>

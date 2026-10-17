@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Team Finances • Lady Misfits{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='finances.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{url_for('static',filename='finances.css')}}">
 {% macro security() %}<input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="operation_key" value="{{finance_token()}}">{% endmacro %}
-<div class="row between"><div><span class="pill">MISFITS BASEBALL</span><h1>{{'Team Finances' if user.role=='admin' else 'Family Payments'}}</h1><p class="muted">Dues, payments and sponsor support, together in one place.</p></div></div>
+<div class="row between"><div><span class="pill">LADY MISFITS SOFTBALL</span><h1>{{'Team Finances' if user.role=='admin' else 'Family Payments'}}</h1><p class="muted">Dues, payments and sponsor support, together in one place.</p></div></div>
 <div class="grid4"><div class="stat"><small>Outstanding balance</small><strong>{{due|money}}</strong></div><div class="stat"><small>Player accounts</small><strong>{{data|length}}</strong></div><div class="stat"><small>Available credit</small><strong>{{credits|money}}</strong></div>{% if user.role=='admin' %}<div class="stat"><small>Awaiting payment review · all teams</small><strong>{{pending|length}}</strong></div>{% endif %}</div>
 {% if user.role=='admin' %}
 <div class="cards">

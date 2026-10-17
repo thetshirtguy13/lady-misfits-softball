@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{team.name}} Chat | Lady Misfits Softball{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='chat_v2.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<link rel="manifest" href="{{url_for('static',filename='manifest.json')}}">
-<link rel="stylesheet" href="{{url_for('static',filename='chat_v2.css',v='20261005b')}}">
 <section class="chat-shell" style="--team-color:{{team_color}}" data-chat-team="{{team.id}}" data-latest-message="{{latest_id}}">
   <header class="chat-header">
     <a href="{{url_for('team_chats')}}" aria-label="Back to team chats">‹</a>

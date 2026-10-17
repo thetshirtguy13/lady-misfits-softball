@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}Pitch Plan 10{% endblock %}{% block content %}
+{% extends "base.html" %}{% block title %}Pitch Plan 10{% endblock %}{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='field_iq.css',v='20261017')}}"><link rel="stylesheet" href="{{url_for('static',filename='field_iq_v2.css',v='20261017')}}"><link rel="stylesheet" href="{{url_for('static',filename='pitch_plan.css',v='20261017')}}">{% endblock %}{% block content %}
 <div class="level-tabs" role="tablist" aria-label="Pitch IQ difficulty">{% for value,label,description in levels %}<a role="tab" aria-selected="{{'true' if value==active_level else 'false'}}" class="level-tab{% if value==active_level %} active{% endif %}" href="{{url_for('pitch_plan',level=value)}}"><strong>{{label}}</strong><small>{{description}}</small></a>{% endfor %}</div>
 <div class="quiz-shell pitch-quiz" data-questions='{{ questions|tojson }}'>
   <div class="quiz-head"><div><small>PITCH IQ PRACTICE · {{active_level|upper}}</small><h1>Pitch Plan Lab</h1></div><strong id="question-count">Question 1 of {{questions|length}}</strong></div>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Softball Scenario Builder{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261012')}}">
 <section id="scenario-app" class="scenario-app" data-editable="{{'true' if editable else 'false'}}" data-selected-id="{{selected_id or ''}}" data-scenarios="{{scenario_payload|tojson|forceescape}}">
   <div class="builder-heading">
     <div><p class="eyebrow">Team preparation</p><h1>Softball Scenario Builder</h1></div>

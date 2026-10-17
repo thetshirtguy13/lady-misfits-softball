@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Team Chats | Lady Misfits Softball{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='chat_v2.css',v='20261017')}}">{% endblock %}
 {% block content %}
-<link rel="manifest" href="{{url_for('static',filename='manifest.json')}}">
-<link rel="stylesheet" href="{{url_for('static',filename='chat_v2.css',v='20261005b')}}">
 <section class="page-heading chat-list-heading">
   <div><p class="eyebrow">Private team rooms</p><h1>Team Chats</h1><p class="muted">Messages stay here until an administrator deletes the team thread.</p></div>
   <div class="chat-alert-actions">
