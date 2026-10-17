@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: lady-misfits-softball
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lady-misfits-softball-db
+          property: connectionString
+      - key: APP_BASE_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_USE_TLS
+        value: true
+      - key: SESSION_COOKIE_SECURE
+        value: true
+
+databases:
+  - name: lady-misfits-softball-db
+    databaseName: lady_misfits_softball
+    user: lady_misfits_softball
