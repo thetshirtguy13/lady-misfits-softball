@@ -1,3 +1,4 @@
+.app-header { isolation: isolate; z-index: 100; }
 .app-header .top { min-height: 68px; }
 .brand { align-items: center; color: var(--text); display: flex; gap: 12px; }
 .brand:hover { color: #fff; }
@@ -18,7 +19,7 @@ nav > a.active { background: rgba(25,230,255,.08); border-color: rgba(25,230,255
 .nav-more > summary::-webkit-details-marker { display: none; }
 .nav-more > summary::after { content: " +"; color: var(--lady-cyan); }
 .nav-more[open] > summary::after { content: " -"; }
-.nav-menu { background: #0b1222; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 48px rgba(0,0,0,.46); display: grid; gap: 3px; min-width: 230px; padding: 8px; position: absolute; right: 0; top: calc(100% + 7px); z-index: 20; }
+.nav-menu { background: #0b1222; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 48px rgba(0,0,0,.46); display: grid; gap: 3px; min-width: 230px; padding: 8px; position: absolute; right: 0; top: calc(100% + 7px); z-index: 101; }
 .nav-menu a,
 .nav-menu .navbtn { background: transparent; border: 0; border-radius: 5px; color: var(--text); display: block; font-size: 13px; padding: 9px 10px; text-align: left; width: 100%; }
 .nav-menu a:hover,
@@ -100,6 +101,11 @@ nav > a.active { background: rgba(25,230,255,.08); border-color: rgba(25,230,255
 @media (max-width: 850px) {
   header {
     position: static;
+  }
+
+  .app-header {
+    position: relative;
+    z-index: 100;
   }
 
   .top .user {
