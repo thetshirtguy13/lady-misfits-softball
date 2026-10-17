@@ -28,11 +28,12 @@
     <a class="{{'active' if endpoint in ['workouts','workout_detail']}}" href="{{url_for('workouts')}}">Drills</a>
     <a class="{{'active' if endpoint=='scenario_builder'}}" href="{{url_for('scenario_builder')}}">Builder</a>
     <details class="nav-more">
-      <summary class="{{'active' if endpoint in ['team_store','stats','coach','teams','development_roster','gamechanger','admin_rosters','admin_families','admin_panel','my_players','finances','finance_account','media_library','account']}}">More</summary>
+      <summary class="{{'active' if endpoint in ['team_store','stats','teams','development_roster','gamechanger','admin_rosters','admin_families','admin_panel','my_players','finances','finance_account','media_library','account']}}">More</summary>
       <div class="nav-menu">
         <a href="{{url_for('team_store')}}">Team Store</a>
         {% if user.role=='player' %}<a href="{{url_for('stats')}}">My Stats</a>{% endif %}
-        {% if user.role in ['coach','admin'] %}<a href="{{url_for('coach')}}">Players</a><a href="{{url_for('teams')}}">Teams</a><a href="{{url_for('development_roster')}}">Development Data</a><a href="{{url_for('gamechanger')}}">GameChanger Import</a>{% endif %}
+        {% if user.role=='coach' %}<a href="{{url_for('development_roster')}}">Team Rosters</a>{% endif %}
+        {% if user.role in ['coach','admin'] %}<a href="{{url_for('teams')}}">Teams</a><a href="{{url_for('gamechanger')}}">GameChanger Import</a>{% endif %}
         {% if user.role=='admin' %}<a href="{{url_for('admin_rosters')}}">Team Rosters</a><a href="{{url_for('admin_families')}}">Family Access</a><a href="{{url_for('admin_panel')}}">Account Admin</a>{% endif %}
         {% if user.role=='parent' or (user.role=='coach' and family_roster_profiles) %}<a href="{{url_for('my_players')}}">My Players</a>{% endif %}
         {% if user.role in ['admin','parent','player'] or (user.role=='coach' and family_roster_profiles) %}<a href="{{url_for('finances')}}">{{'Finances' if user.role=='admin' else 'Payments'}}</a>{% endif %}
