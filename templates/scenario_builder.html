@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Softball Scenario Builder{% endblock %}
-{% block head %}<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261017')}}"><link rel="stylesheet" href="{{url_for('static',filename='scenario_builder_v2.css',v='20261017b')}}">{% endblock %}
 {% block content %}
+<link rel="stylesheet" href="{{url_for('static',filename='scenario_builder.css',v='20261018a')}}"><link rel="stylesheet" href="{{url_for('static',filename='scenario_builder_v2.css',v='20261018a')}}">
 <section id="scenario-app" class="scenario-app sport-softball" data-editable="{{'true' if editable else 'false'}}" data-selected-id="{{selected_id or ''}}" data-scenarios="{{scenario_payload|tojson|forceescape}}">
   <div class="builder-heading">
     <div><p class="eyebrow">Team preparation</p><h1>Softball Scenario Builder</h1></div>
     <div class="playback-controls">
+      <button type="button" class="builder-btn quiet" id="builder-guide-button">How to Build</button>
       <label class="speed-control">Speed<select id="playback-speed"><option value="0.65">Slow</option><option value="1" selected>Game</option><option value="1.35">Fast</option></select></label>
       <button type="button" class="builder-btn quiet" id="restart-button" title="Restart scenario">Restart</button>
       <button type="button" class="builder-btn play" id="play-button">Play Scenario</button>
@@ -19,16 +20,29 @@
     <input type="hidden" name="design_json" id="design-json">
     <div><label for="scenario-title">Scenario name</label><input id="scenario-title" name="title" maxlength="140" placeholder="Fly ball, runner on third" required></div>
     <div><label for="scenario-situation">Situation or coaching call</label><input id="scenario-situation" name="situation" maxlength="240" placeholder="One out, runner tags on the catch"></div>
-    <div><label for="scenario-team">Team</label><select id="scenario-team" name="team_id" required>{% for team in teams %}<option value="{{team.id}}">{{team.name}}</option>{% endfor %}</select></div>
+    <div><label for="scenario-team">Team</label><select id="scenario-team" name="team_id" required>{% for team in teams %}<option value="{{team.id}}">{{team.age_group}} {{team.name}}</option>{% endfor %}</select></div>
     <button type="submit" class="builder-btn save">Save to Team</button>
   </form>
+  {% endif %}
 
-  <div class="preset-bar" aria-label="Scenario presets">
-    <span>Start</span>
-    <button type="button" class="preset-button active" data-preset="fly-r3">Fly Ball + R3</button>
-    <button type="button" class="preset-button" data-preset="ground-r1">Ground Ball + R1</button>
-    <button type="button" class="preset-button" data-preset="bunt-r1">Bunt Defense</button>
-    <button type="button" class="preset-button" data-preset="empty">Empty Field</button>
+  <div class="preset-bar" aria-label="Situation library">
+    <label class="situation-picker"><span>Situation Library</span><select id="scenario-preset-select">
+      <optgroup label="Outfield Rotations">
+        <option value="fly-r3">Fly Ball + Runner on 3rd</option>
+        <option value="left-single">Single to Left Field</option>
+        <option value="left-r2">Left Field Hit + Runner on 2nd</option>
+        <option value="right-single">Single to Right Field</option>
+      </optgroup>
+      <optgroup label="Infield and Small Ball">
+        <option value="ground-r1">Ground Ball + Runner on 1st</option>
+        <option value="bunt-r1">Bunt Defense + Runner on 1st</option>
+      </optgroup>
+      <optgroup label="Base Defense">
+        <option value="pickoff-third">Pickoff Attempt at 3rd</option>
+        <option value="rundown-third-home">Rundown: 3rd to Home</option>
+      </optgroup>
+      <option value="empty">Empty Field</option>
+    </select></label>
     <span>Runners</span>
     <button type="button" class="preset-button runner-toggle" data-runner="R1">1st</button>
     <button type="button" class="preset-button runner-toggle" data-runner="R2">2nd</button>
@@ -36,6 +50,7 @@
     <button type="button" class="preset-button runner-toggle" data-runner="BR">Batter</button>
   </div>
 
+  {% if editable %}
   <div class="tool-bar" aria-label="Scenario action tools">
     <button type="button" class="tool-button active" data-tool="setup"><b>+</b><span>Setup</span></button>
     <button type="button" class="tool-button" data-tool="move"><b>&#8594;</b><span>Move</span></button>
@@ -46,6 +61,13 @@
     <button type="button" class="tool-button" data-tool="cutoff"><b>X</b><span>Cutoff</span></button>
     <button type="button" class="tool-button" data-tool="tag"><b>T</b><span>Tag / Run</span></button>
     <button type="button" class="tool-button" id="undo-button"><b>&#8630;</b><span>Undo</span></button>
+  </div>
+  <div class="ball-style-bar" aria-label="Ball travel type">
+    <span>Ball travel</span>
+    <button type="button" class="active" data-ball-style="ground">Ground</button>
+    <button type="button" data-ball-style="bounce">Bounce</button>
+    <button type="button" data-ball-style="line-drive">Line Drive</button>
+    <button type="button" data-ball-style="pop-fly">Pop Fly</button>
   </div>
   {% endif %}
 
@@ -64,6 +86,10 @@
             <filter id="field-glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             <filter id="base-shadow" x="-80%" y="-80%" width="260%" height="260%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#00100c" flood-opacity=".8"/></filter>
           </defs>
+          <g class="stadium-backdrop" aria-hidden="true">
+            <path d="M178 184 V113 h66 v42 h38 V91 h60 v66 h45 V72 h54 v85 h44 v-48 h69 v48 h42 v-73 h51 v73 h51 v-36 h72 v63"/>
+            <path class="gateway-arch" d="M446 156 Q500 34 554 156 M455 156 Q500 63 545 156"/>
+          </g>
           <path class="field-ground" d="M500 724 L72 302 Q108 113 284 45 Q500 -35 716 45 Q892 113 928 302 Z" fill="url(#field-grass)"/>
           <g clip-path="url(#field-clip)">
             <rect width="1000" height="760" fill="url(#mow-stripes)"/>
@@ -73,24 +99,35 @@
             <path class="infield-grass-stripes" d="M500 660 L318 521 L500 347 L682 521 Z" fill="url(#mow-stripes)" opacity=".62"/>
             <circle class="mound-dirt" cx="500" cy="521" r="43" fill="url(#infield-dirt)" stroke="#d89455" stroke-width="3"/>
             <circle class="home-dirt" cx="500" cy="704" r="54" fill="url(#infield-dirt)"/>
-            <path class="foul-lines" d="M500 710 L72 302 M500 710 L928 302" fill="none" stroke="#f7f4e9" stroke-width="4"/>
-            <path class="base-paths" d="M500 704 L302 521 L500 332 L698 521 Z" fill="none" stroke="#d8a36b" stroke-width="8" opacity=".86"/>
-            <path class="diamond-guide" d="M500 704 L302 521 M500 704 L698 521 M302 521 L500 332 M698 521 L500 332" fill="none" stroke="#f3d3a6" stroke-width="2" opacity=".3"/>
+            <path class="foul-lines" d="M500 718 L72 302 M500 718 L928 302" fill="none" stroke="#f7f4e9" stroke-width="4"/>
+            <path class="base-paths" d="M500 698 L311 516 L500 332 L689 516 Z" fill="none" stroke="#d8a36b" stroke-width="8" opacity=".86"/>
+            <path class="diamond-guide" d="M500 698 L311 516 M500 698 L689 516 M311 516 L500 332 M689 516 L500 332" fill="none" stroke="#f3d3a6" stroke-width="2" opacity=".3"/>
             <rect width="1000" height="760" fill="url(#field-light)"/>
           </g>
           <path class="outfield-wall" d="M72 302 Q108 113 284 45 Q500 -35 716 45 Q892 113 928 302" fill="none" stroke="#24f2c2" stroke-width="9" filter="url(#field-glow)"/>
+          <path class="wall-cap" d="M72 296 Q108 107 284 39 Q500 -41 716 39 Q892 107 928 296" fill="none"/>
           <g class="distance-markers" fill="#bfffee" font-family="system-ui,sans-serif" font-size="18" font-weight="900" text-anchor="middle"><text x="130" y="226">200</text><text x="500" y="45">225</text><text x="870" y="226">200</text></g>
           <g class="foul-poles" fill="#d9ff46" filter="url(#field-glow)"><rect x="67" y="257" width="8" height="48" rx="2"/><rect x="925" y="257" width="8" height="48" rx="2"/></g>
-          <g class="field-details" fill="none" stroke="#e9fff9" stroke-width="3" opacity=".7"><path d="M447 682 h-31 v-72 h26"/><path d="M553 682 h31 v-72 h-26"/><path d="M219 545 h-118 v54 h108 M781 545 h118 v54 h-108" stroke="#ff5cc9" stroke-width="5"/></g>
+          <g class="field-details" fill="none" stroke="#e9fff9" stroke-width="3" opacity=".7"><rect class="right-handed-batters-box" x="421" y="671" width="54" height="58" rx="2"/><rect class="left-handed-batters-box" x="525" y="671" width="54" height="58" rx="2"/><path d="M219 545 h-118 v54 h108 M781 545 h118 v54 h-108" stroke="#ff5cc9" stroke-width="5"/></g>
           <g class="dugout-labels" fill="#ff98df" font-family="system-ui,sans-serif" font-size="14" font-weight="900" letter-spacing="2"><text x="111" y="537">DUGOUT</text><text x="817" y="537">DUGOUT</text></g>
-          <g class="bases" fill="#fff" stroke="#d6d6cf" stroke-width="2" filter="url(#base-shadow)"><path d="M500 688 l17 14 -8 22 h-18 l-8 -22 z"/><rect x="685" y="508" width="26" height="26" transform="rotate(45 698 521)"/><rect x="487" y="319" width="26" height="26" transform="rotate(45 500 332)"/><rect x="289" y="508" width="26" height="26" transform="rotate(45 302 521)"/></g>
+          <g class="bases" fill="#fff" stroke="#d6d6cf" stroke-width="2" filter="url(#base-shadow)"><path class="home-plate" d="M483 688 H517 V703 L500 720 L483 703 Z"/><rect class="first-base" x="676" y="503" width="26" height="26" transform="rotate(45 689 516)"/><rect class="second-base" x="487" y="319" width="26" height="26" transform="rotate(45 500 332)"/><rect class="third-base" x="298" y="503" width="26" height="26" transform="rotate(45 311 516)"/></g>
           <rect class="pitching-rubber" x="490" y="517" width="20" height="6" rx="2" fill="#fff" filter="url(#base-shadow)"/>
           <path class="centerline" d="M500 659 Q500 604 500 565" fill="none" stroke="#d6a067" stroke-width="2" stroke-dasharray="7 11" opacity=".55"/>
         </svg>
         <div id="movement-layer" class="movement-layer"></div>
         <div id="marker-layer" class="marker-layer"></div>
       </div>
+      <div class="field-control-dock" aria-label="Field controls">
+          <button type="button" id="play-library-button" title="Open plays"><b>&#9654;</b><span>Plays</span></button>
+          {% if editable %}<button type="button" id="record-button" title="Record movements"><b class="record-dot"></b><span>Record</span></button>
+          <button type="button" id="direct-move-button" class="active" title="Drag players to record movement"><b>&#8596;</b><span>Move</span></button>
+          <button type="button" id="field-draw-button" title="Draw an instruction path"><b>&#9998;</b><span>Draw</span></button>
+          <button type="button" id="field-undo-button" title="Undo the last step"><b>&#8630;</b><span>Undo</span></button>{% endif %}
+          <button type="button" id="field-restart-button" title="Return to the start"><b>&#8634;</b><span>Start</span></button>
+          <button type="button" class="field-play-button" id="field-play-button" aria-label="Play scenario from the field"><b>&#9654;</b><span>Play</span></button>
+      </div>
       <div class="play-progress"><div id="play-progress-bar"></div></div>
+      <div id="step-chips" class="step-chips" aria-label="Scenario steps"></div>
     </div>
 
     <aside class="builder-side">
@@ -114,6 +151,23 @@
     </aside>
   </div>
 </section>
-<script src="{{url_for('static',filename='scenario_builder.js',v='20261017')}}" defer></script>
-{% endblock %}
 
+<dialog id="play-library-dialog" class="builder-dialog">
+  <div class="dialog-heading"><div><span>Play Library</span><h2>Choose a situation</h2></div><button type="button" class="dialog-close" aria-label="Close play library">&times;</button></div>
+  <div class="library-tabs" role="tablist"><button type="button" class="active" data-library-tab="built-in">Situation plays</button><button type="button" data-library-tab="team">My team plays</button></div>
+  <div class="library-tab-panel active" data-library-panel="built-in"><label class="scenario-search"><span>Find a situation</span><input id="scenario-library-search" type="search" placeholder="Try: bases loaded, bunt, double cut"></label><div id="built-in-scenario-folders"></div></div>
+  <div class="library-tab-panel" data-library-panel="team">
+    <div class="dialog-team-plays">
+      {% for scenario in scenarios %}<button type="button" data-saved-scenario="{{scenario.id}}"><span>{{scenario.title}}</span><small>{{scenario.situation or 'Team scenario'}}</small></button>{% else %}<p>No team plays saved yet. Record a play and use Save to Team.</p>{% endfor %}
+    </div>
+  </div>
+</dialog>
+
+<dialog id="builder-guide-dialog" class="builder-dialog guide-dialog">
+  <div class="dialog-heading"><div><span>Quick Start</span><h2>Build a play in three moves</h2></div><button type="button" class="dialog-close" aria-label="Close builder guide">&times;</button></div>
+  <ol class="guide-steps"><li><b>1</b><div><strong>Load a situation</strong><span>Open Plays and start from a game situation or an empty field.</span></div></li><li><b>2</b><div><strong>Press Record and drag</strong><span>Move a player or the softball directly. Every drag becomes the next timeline step.</span></div></li><li><b>3</b><div><strong>Replay and fine-tune</strong><span>Press Play for the full animation or select any numbered step to inspect and edit it.</span></div></li></ol>
+  <button type="button" class="builder-btn play guide-start">Start Building</button>
+</dialog>
+
+<script src="{{url_for('static',filename='scenario_builder.js',v='20261018a')}}" defer></script>
+{% endblock %}
