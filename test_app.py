@@ -95,9 +95,12 @@ class PortalFlowTests(unittest.TestCase):
         self.assertIn(b'id="field-play-button"',response.data)
         self.assertIn(b'id="step-chips"',response.data)
         self.assertIn(b'data-ball-style="pop-fly"',response.data)
-        self.assertIn(b"scenario_builder.js?v=20261018b",response.data)
+        self.assertIn(b"scenario_builder.js?v=20261018c",response.data)
         self.assertIn(b'class="scenario-app sport-baseball sport-softball"',response.data)
         self.assertIn(b'M500 722 L235 521 Q238 397 344 318',response.data)
+        softball_css=self.client.get("/static/scenario_builder_v2.css")
+        self.assertIn(b'.sport-softball .field-ball',softball_css.data)
+        self.assertIn(b'#e7f328 60%',softball_css.data)
         self.assertNotIn(b"13U Gold",response.data)
 
         script=self.client.get("/static/scenario_builder.js")
