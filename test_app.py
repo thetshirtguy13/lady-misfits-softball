@@ -95,7 +95,7 @@ class PortalFlowTests(unittest.TestCase):
         self.assertIn(b'id="field-play-button"',response.data)
         self.assertIn(b'id="step-chips"',response.data)
         self.assertIn(b'data-ball-style="pop-fly"',response.data)
-        self.assertIn(b"scenario_builder.js?v=20261018c",response.data)
+        self.assertIn(b"scenario_builder.js?v=20261018d",response.data)
         self.assertIn(b'class="scenario-app sport-baseball sport-softball"',response.data)
         self.assertIn(b'M500 722 L235 521 Q238 397 344 318',response.data)
         softball_css=self.client.get("/static/scenario_builder_v2.css")
@@ -433,6 +433,8 @@ class PortalFlowTests(unittest.TestCase):
         worker=self.client.get("/service-worker.js")
         self.assertEqual(200,worker.status_code)
         self.assertEqual("/",worker.headers["Service-Worker-Allowed"])
+        self.assertIn(b"lady-misfits-static-v2",worker.data)
+        self.assertIn(b"refreshFirst",worker.data)
 
     def test_only_admin_can_delete_entire_chat_thread(self):
         self.login_as(self.coach_id)
