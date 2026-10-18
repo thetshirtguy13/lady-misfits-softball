@@ -20,7 +20,7 @@
 .field-ball::before,.field-ball::after{content:""!important;position:absolute;top:2px;width:8px;height:17px;border:2px solid #c51f32;border-top-color:transparent;border-bottom-color:transparent;border-radius:50%;background:transparent;color:transparent;font-size:0;letter-spacing:0}
 .field-ball::before{left:1px;border-right:0;transform:rotate(-12deg)}
 .field-ball::after{right:1px;left:auto;border-left:0;transform:rotate(-12deg)}
-.sport-softball .field-ball{background:radial-gradient(circle at 36% 28%,#ffff9a 0 20%,#e7f328 60%,#a5af0d 100%);border-color:#7f8611;box-shadow:0 0 0 2px #f4ff7ab8,0 4px 10px #000d}
+.sport-softball .field-ball{background:radial-gradient(circle at 36% 28%,#ffff9a 0 20%,#e7f328 60%,#a5af0d 100%)!important;border-color:#7f8611!important;box-shadow:0 0 0 2px #f4ff7ab8,0 4px 10px #000d!important}
 .timeline-tools{display:flex;gap:3px}
 .timeline li.selected-step{background:#1b2d42;box-shadow:inset 3px 0 0 var(--orange)}
 .timeline li.selected-step .step-number{border-color:var(--orange);color:var(--orange)}
