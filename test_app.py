@@ -90,7 +90,22 @@ class PortalFlowTests(unittest.TestCase):
         self.assertIn(b'id="insert-button"',response.data)
         self.assertIn(b'id="redraw-button"',response.data)
         self.assertIn(b'data-runner="R1"',response.data)
+        self.assertIn(b'id="scenario-preset-select"',response.data)
+        self.assertIn(b'id="play-library-button"',response.data)
+        self.assertIn(b'id="field-play-button"',response.data)
+        self.assertIn(b'id="step-chips"',response.data)
+        self.assertIn(b'data-ball-style="pop-fly"',response.data)
+        self.assertIn(b"scenario_builder.js?v=20261018a",response.data)
         self.assertNotIn(b"13U Gold",response.data)
+
+        script=self.client.get("/static/scenario_builder.js")
+        self.assertIn(b'`fly-${state.id}-${zone.id}`',script.data)
+        self.assertIn(b'`hit-${state.id}-${zone.id}`',script.data)
+        self.assertIn(b'`rf-read-${contact.id}-fielded`',script.data)
+        self.assertIn(b'`rf-read-${contact.id}-missed`',script.data)
+        self.assertIn(b'rightLineHome=entry.id==="double-cut-rf-line-home"',script.data)
+        self.assertIn(b'keepOutfielderBackupsInPlay(design.actions)',script.data)
+        self.assertIn(b'throughPoint=keepOutfielderInside(contact.through)',script.data)
 
     def test_coach_can_save_and_update_team_scenario(self):
         self.login_as(self.coach_id)
